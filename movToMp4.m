@@ -5,6 +5,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <Foundation/NSFileManager.h>
 
 @implementation movToMp4
 
@@ -22,16 +23,23 @@ RCT_EXPORT_METHOD(convertMovToMp4: (NSString*)filename
     NSArray *compatiblePresets = [AVAssetExportSession exportPresetsCompatibleWithAsset:avAsset];
 
     AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
+    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
+    NSFileManager *manager = [NSFileManager defaultManager];
+    NSError *error = nil;
+    [manager removeItemAtPath:[NSHomeDirectory() stringByAppendingFormat:@"/Documents/%@.mp4", outputPath] error: &error];
+    if (error) {
+       NSString *codeWithDomain = [NSString stringWithFormat:@"E%@%zd", error.domain.uppercaseString, error.code];
+       reject(codeWithDomain, error.localizedDescription, error);
+    } else {
+      NSString * resultPath = [NSHomeDirectory() stringByAppendingFormat:@"/Documents/%@.mp4", outputPath];
 
-    NSString * resultPath = [NSHomeDirectory() stringByAppendingFormat:@"/Documents/%@.mp4", outputPath];
+      exportSession.outputURL = [NSURL fileURLWithPath:resultPath];
 
-    exportSession.outputURL = [NSURL fileURLWithPath:resultPath];
+      //set the output file format if you want to make it in other file format (ex .3gp)
+      exportSession.outputFileType = AVFileTypeMPEG4;
+      exportSession.shouldOptimizeForNetworkUse = YES;
 
-    //set the output file format if you want to make it in other file format (ex .3gp)
-    exportSession.outputFileType = AVFileTypeMPEG4;
-    exportSession.shouldOptimizeForNetworkUse = YES;
-
-    [exportSession exportAsynchronouslyWithCompletionHandler:^{
+      [exportSession exportAsynchronouslyWithCompletionHandler:^{
         switch ([exportSession status])
         {
             case AVAssetExportSessionStatusFailed: {
@@ -53,9 +61,8 @@ RCT_EXPORT_METHOD(convertMovToMp4: (NSString*)filename
             default:
                 break;
         }
-    }];
-
-
+      }];
+    }
 }
 
 @end
