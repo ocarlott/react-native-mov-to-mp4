@@ -21,8 +21,6 @@ RCT_EXPORT_METHOD(convertMovToMp4: (NSString*)filename
     AVURLAsset *avAsset = [AVURLAsset URLAssetWithURL:urlFile options:nil];
 
     NSArray *compatiblePresets = [AVAssetExportSession exportPresetsCompatibleWithAsset:avAsset];
-
-    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
     AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
     NSFileManager *manager = [NSFileManager defaultManager];
     NSError *error = nil;
